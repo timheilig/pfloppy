@@ -315,9 +315,9 @@ class Expert(Encoding):
         self.register(255, 378)
 
 
-class StandardEncoding(Encoding):
+class Standard(Encoding):
     def __init__(self):
-        super(StandardEncoding, self).__init__()
+        super(Standard, self).__init__()
 
         self.register(0, 0)
         self.register(1, 0)

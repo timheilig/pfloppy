@@ -580,6 +580,9 @@ class Type2CharStringParser(object):
                 self.parse_subroutine(local_subr_index, global_subr_index, True)
             elif value == (29,) and global_subroutine_index_provided:
                 self.parse_subroutine(global_subr_index, local_subr_index, False)
+            elif value == (28,):
+                # special handling for shortint which is a forward looking operator
+                self._sequence.append(data.read_integer(2, True))
             elif operand_type == OPERAND_OPERATION:
                 command = Command(value)
                 if value == (1,) or value == (18,):

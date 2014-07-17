@@ -1,10 +1,26 @@
 import os
-import pdfbox.fonts.builders
+import fontTools.cffLib
+import fonts.builders
+import argparse
 
 
-for root, dirs, files in os.walk('/Library/WebServer/Documents/font-images.pdf'):
-    if root.endswith('build'):
+def print_font(file_name):
+    font_file = open(file_name, "rb")
+    font = fontTools.cffLib.CFFFontSet()
+    font.decompile(font_file, 'unused')
+    new_font = fonts.builders.parse_file(file_name)
+    for item in new_font:
+        print item
+
+
+parser = argparse.ArgumentParser(description='Parse and print font information')
+parser.add_argument('--directory', help="treat file name as a directory structure to walk")
+parser.add_argument('target', help="File or directory to open")
+args = parser.parse_args()
+if args.directory:
+    for root, dirs, files in os.walk(args.target):
         for found_file in files:
-            if found_file.endswith('pfa'):
-                pdfbox.fonts.builders.parse_file(os.path.join(root, found_file))
-        print root, dirs, files
+            print_font(os.path.join(root, found_file))
+else:
+    print_font(args.target)
+

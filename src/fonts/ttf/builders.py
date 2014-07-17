@@ -1,5 +1,5 @@
 import datetime
-from pdfbox.fonts.walkable import WalkableString as WalkableString
+from fonts.walkable import WalkableString as WalkableString
 
 
 class CmapFormat(object):

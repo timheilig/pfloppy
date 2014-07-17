@@ -1,8 +1,8 @@
 from encodings import Encoding
 from charstrings import Type2CharString, Type2CharStringParser
-from pdfbox.fonts.walkable import WalkableString as WalkableString
-import pdfbox.fonts.cff.rawdata
-import pdfbox.fonts.cff.encodings
+from fonts.walkable import WalkableString as WalkableString
+import fonts.cff.rawdata
+import fonts.cff.encodings
 
 
 OPERAND_SID = 'SID'
@@ -12,116 +12,117 @@ OPERAND_ARRAY = 'array'
 OPERAND_DELTA = 'delta'
 OPERAND_OPERATION = 'operation'
 
+
 class CffFont(object):
     built_in_string_table = [
         '.notdef', 'space', 'exclam', 'quotedbl', 'numbersign', 'dollar', 'percent', 'ampersand', 'quoteright',  # 0-8
-        'parenleft', 'parenright', 'asterisk', 'plus', 'comma', 'hyphen', 'period', 'slash', 'zero', 'one',    # 9-18
-        'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'colon', 'semicolon', 'less',         # 19-29
-        'equal', 'greater', 'question', 'at', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',      # 30-45
-        'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'bracketleft', 'backslash',      # 46-61
-        'bracketright', 'asciicircum', 'underscore', 'quoteleft', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', # 62-74
-        'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'braceleft',      # 75-92
-        'bar', 'braceright', 'asciitilde', 'exclamdown', 'cent', 'sterling', 'fraction', 'yen', 'florin',      # 93-101
-        'section', 'currency', 'quotesingle', 'quotedblleft', 'guillemotleft', 'guilsinglleft',                # 102-107
-        'guilsinglright', 'fi', 'fl', 'endash', 'dagger', 'daggerdbl', 'periodcentered', 'paragraph',          # 108-115
-        'bullet', 'quotesinglbase', 'quotedblbase', 'quotedblright', 'guillemotright', 'ellipsis',             # 116-121
-        'perthousand', 'questiondown', 'grave', 'acute', 'circumflex', 'tilde', 'macron', 'breve',             # 122-129
-        'dotaccent', 'dieresis', 'ring', 'cedilla', 'hungarumlaut', 'ogonek', 'caron', 'emdash', 'AE',         # 130-138
-        'ordfeminine', 'Lslash', 'Oslash', 'OE', 'ordmasculine', 'ae', 'dotlessi', 'lslash', 'oslash',         # 139-147
-        'oe','germandbls','onesuperior','logicalnot', 'mu', 'trademark', 'Eth', 'onehalf', 'plusminus',        # 148-156
-        'Thorn', 'onequarter', 'divide', 'brokenbar', 'degree', 'thorn', 'threequarters', 'twosuperior',       # 157-164
-        'registered', 'minus', 'eth', 'multiply', 'threesuperior', 'copyright', 'Aacute', 'Acircumflex',       # 165-172
+        'parenleft', 'parenright', 'asterisk', 'plus', 'comma', 'hyphen', 'period', 'slash', 'zero', 'one',  # 9-18
+        'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'colon', 'semicolon', 'less',  # 19-29
+        'equal', 'greater', 'question', 'at', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',  # 30-45
+        'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'bracketleft', 'backslash',  # 46-61
+        'bracketright', 'asciicircum', 'underscore', 'quoteleft', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',  # 62-74
+        'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'braceleft',  # 75-92
+        'bar', 'braceright', 'asciitilde', 'exclamdown', 'cent', 'sterling', 'fraction', 'yen', 'florin',  # 93-101
+        'section', 'currency', 'quotesingle', 'quotedblleft', 'guillemotleft', 'guilsinglleft',  # 102-107
+        'guilsinglright', 'fi', 'fl', 'endash', 'dagger', 'daggerdbl', 'periodcentered', 'paragraph',  # 108-115
+        'bullet', 'quotesinglbase', 'quotedblbase', 'quotedblright', 'guillemotright', 'ellipsis',  # 116-121
+        'perthousand', 'questiondown', 'grave', 'acute', 'circumflex', 'tilde', 'macron', 'breve',  # 122-129
+        'dotaccent', 'dieresis', 'ring', 'cedilla', 'hungarumlaut', 'ogonek', 'caron', 'emdash', 'AE',  # 130-138
+        'ordfeminine', 'Lslash', 'Oslash', 'OE', 'ordmasculine', 'ae', 'dotlessi', 'lslash', 'oslash',  # 139-147
+        'oe', 'germandbls', 'onesuperior', 'logicalnot', 'mu', 'trademark', 'Eth', 'onehalf', 'plusminus',  # 148-156
+        'Thorn', 'onequarter', 'divide', 'brokenbar', 'degree', 'thorn', 'threequarters', 'twosuperior',  # 157-164
+        'registered', 'minus', 'eth', 'multiply', 'threesuperior', 'copyright', 'Aacute', 'Acircumflex',  # 165-172
         'Adieresis', 'Agrave', 'Aring', 'Atilde', 'Ccedilla', 'Eacute', 'Ecircumflex', 'Edieresis', 'Egrave',  # 173-181
-        'Iacute', 'Icircumflex', 'Idieresis', 'Igrave', 'Ntilde', 'Oacute', 'Ocircumflex', 'Odieresis',        # 182-189
-        'Ograve', 'Otilde', 'Scaron', 'Uacute', 'Ucircumflex', 'Udieresis', 'Ugrave', 'Yacute', 'Ydieresis',   # 190-198
-        'Zcaron', 'aacute', 'acircumflex', 'adieresis', 'agrave', 'aring', 'atilde', 'ccedilla', 'eacute',     # 199-207
-        'ecircumflex', 'edieresis', 'egrave', 'iacute','icircumflex', 'idieresis', 'igrave', 'ntilde',         # 208-215
-        'oacute', 'ocircumflex', 'odieresis', 'ograve', 'otilde', 'scaron', 'uacute', 'ucircumflex',           # 216-223
-        'udieresis', 'ugrave', 'yacute', 'ydieresis', 'zcaron', 'exclamsmall', 'Hungarumlautsmall',            # 224-230
-        'dollaroldstyle', 'dollarsuperior', 'ampersandsmall', 'Acutesmall', 'parenleftsuperior',               # 231-235
-        'parenrightsuperior4', 'twodotenleader', 'onedotenleader', 'zerooldstyle', 'oneoldstyle',              # 236-240
-        'twooldstyle', 'threeoldstyle', 'fouroldstyle', 'fiveoldstyle', 'sixoldstyle', 'sevenoldstyle',        # 241-246
-        'eightoldstyle', 'nineoldstyle', 'commasuperior', 'threequartersemdash', 'periodsuperior',             # 247-251
-        'questionsmall', 'asuperior', 'bsuperior', 'centsuperior', 'dsuperior', 'esuperior', 'isuperior',      # 252-258
-        'lsuperior', 'msuperior', 'nsuperior', 'osuperior', 'rsuperior', 'ssuperior', 'tsuperior', 'ff',       # 259-266
-        'ffi', 'ffl', 'parenleftinferior', 'parenrightinferior', 'Circumflexsmall', 'hyphensuperior',          # 267-272
-        'Gravesmall', 'Asmall', 'Bsmall', 'Csmall', 'Dsmall', 'Esmall', 'Fsmall', 'Gsmall', 'Hsmall',          # 273-281
-        'Ismall', 'Jsmall', 'Ksmall', 'Lsmall', 'Msmall', 'Nsmall', 'Osmall', 'Psmall', 'Qsmall', 'Rsmall',    # 282-291
-        'Ssmall', 'Tsmall', 'Usmall', 'Vsmall', 'Wsmall', 'Xsmall', 'Ysmall', 'Zsmall', 'colonmonetary',       # 292-300
-        'onefitted', 'rupiah', 'Tildesmall', 'exclamdownsmall', 'centoldstyle', 'Lslashsmall',                 # 301-306
-        'Scaronsmall', 'Zcaronsmall', 'Dieresissmall', 'Brevesmall', 'Caronsmall', 'Dotaccentsmall',           # 307-312
-        'Macronsmall', 'figuredash', 'hypheninferior', 'Ogoneksmall', 'Ringsmall', 'Cedillasmall',             # 313-318
-        'questiondownsmall', 'oneeighth', 'threeeighths', 'fiveeighths', 'seveneigths', 'onethird',            # 319-324
-        'twothirds', 'zerosuperior', 'foursuperior', 'fivesuperior', 'sixsuperior', 'sevensuperior',           # 325-330
-        'eightsuperior', 'ninesuperior', 'zeroinferior', 'oneinferior', 'twoinferior', 'threeinferior',        # 331-336
-        'fourinferior', 'fiveinferior', 'sixinferior', 'seveninferior', 'eightinferior', 'nineinferior',       # 337-342
-        'centinferior', 'dollarinferior', 'periodinferior', 'commainferior', 'Agravesmall', 'Aacutesmall',     # 343-348
-        'Acircumflexsmall', 'Atildesmall', 'Adieresissmall', 'Aringsmall', 'AEsmall', 'Ccedillasmall',         # 349-354
-        'Egravesmall', 'Eacutesmall', 'Ecircumflexsmall', 'Edieresissmall', 'Igravesmall', 'Iacutesmall',      # 355-360
-        'Icircumflexsmall', 'Idieresissmall', 'Ethsmall', 'Ntildesmall', 'Ogravesmall', 'Oacutesmall',         # 361-366
-        'Ocircumflexsmall', 'Otildesmall', 'Odieresissmall', 'OEsmall', 'Oslashsmall', 'Ugravesmall',          # 367-372
-        'Uacutesmall', 'Ucircumflexsmall', 'Udieresissmall', 'Yacutesmall', 'Thornsmall', 'Ydieresissmall',    # 373-378
-        '001.000', '001.001', '001.002', '001.003', 'Black', 'Bold', 'Book', 'Light', 'Medium', 'Regular',     # 379-388
-        'Roman', 'Semibold'                                                                                    # 389-390
+        'Iacute', 'Icircumflex', 'Idieresis', 'Igrave', 'Ntilde', 'Oacute', 'Ocircumflex', 'Odieresis',  # 182-189
+        'Ograve', 'Otilde', 'Scaron', 'Uacute', 'Ucircumflex', 'Udieresis', 'Ugrave', 'Yacute', 'Ydieresis',  # 190-198
+        'Zcaron', 'aacute', 'acircumflex', 'adieresis', 'agrave', 'aring', 'atilde', 'ccedilla', 'eacute',  # 199-207
+        'ecircumflex', 'edieresis', 'egrave', 'iacute', 'icircumflex', 'idieresis', 'igrave', 'ntilde',  # 208-215
+        'oacute', 'ocircumflex', 'odieresis', 'ograve', 'otilde', 'scaron', 'uacute', 'ucircumflex',  # 216-223
+        'udieresis', 'ugrave', 'yacute', 'ydieresis', 'zcaron', 'exclamsmall', 'Hungarumlautsmall',  # 224-230
+        'dollaroldstyle', 'dollarsuperior', 'ampersandsmall', 'Acutesmall', 'parenleftsuperior',  # 231-235
+        'parenrightsuperior4', 'twodotenleader', 'onedotenleader', 'zerooldstyle', 'oneoldstyle',  # 236-240
+        'twooldstyle', 'threeoldstyle', 'fouroldstyle', 'fiveoldstyle', 'sixoldstyle', 'sevenoldstyle',  # 241-246
+        'eightoldstyle', 'nineoldstyle', 'commasuperior', 'threequartersemdash', 'periodsuperior',  # 247-251
+        'questionsmall', 'asuperior', 'bsuperior', 'centsuperior', 'dsuperior', 'esuperior', 'isuperior',  # 252-258
+        'lsuperior', 'msuperior', 'nsuperior', 'osuperior', 'rsuperior', 'ssuperior', 'tsuperior', 'ff',  # 259-266
+        'ffi', 'ffl', 'parenleftinferior', 'parenrightinferior', 'Circumflexsmall', 'hyphensuperior',  # 267-272
+        'Gravesmall', 'Asmall', 'Bsmall', 'Csmall', 'Dsmall', 'Esmall', 'Fsmall', 'Gsmall', 'Hsmall',  # 273-281
+        'Ismall', 'Jsmall', 'Ksmall', 'Lsmall', 'Msmall', 'Nsmall', 'Osmall', 'Psmall', 'Qsmall', 'Rsmall',  # 282-291
+        'Ssmall', 'Tsmall', 'Usmall', 'Vsmall', 'Wsmall', 'Xsmall', 'Ysmall', 'Zsmall', 'colonmonetary',  # 292-300
+        'onefitted', 'rupiah', 'Tildesmall', 'exclamdownsmall', 'centoldstyle', 'Lslashsmall',  # 301-306
+        'Scaronsmall', 'Zcaronsmall', 'Dieresissmall', 'Brevesmall', 'Caronsmall', 'Dotaccentsmall',  # 307-312
+        'Macronsmall', 'figuredash', 'hypheninferior', 'Ogoneksmall', 'Ringsmall', 'Cedillasmall',  # 313-318
+        'questiondownsmall', 'oneeighth', 'threeeighths', 'fiveeighths', 'seveneigths', 'onethird',  # 319-324
+        'twothirds', 'zerosuperior', 'foursuperior', 'fivesuperior', 'sixsuperior', 'sevensuperior',  # 325-330
+        'eightsuperior', 'ninesuperior', 'zeroinferior', 'oneinferior', 'twoinferior', 'threeinferior',  # 331-336
+        'fourinferior', 'fiveinferior', 'sixinferior', 'seveninferior', 'eightinferior', 'nineinferior',  # 337-342
+        'centinferior', 'dollarinferior', 'periodinferior', 'commainferior', 'Agravesmall', 'Aacutesmall',  # 343-348
+        'Acircumflexsmall', 'Atildesmall', 'Adieresissmall', 'Aringsmall', 'AEsmall', 'Ccedillasmall',  # 349-354
+        'Egravesmall', 'Eacutesmall', 'Ecircumflexsmall', 'Edieresissmall', 'Igravesmall', 'Iacutesmall',  # 355-360
+        'Icircumflexsmall', 'Idieresissmall', 'Ethsmall', 'Ntildesmall', 'Ogravesmall', 'Oacutesmall',  # 361-366
+        'Ocircumflexsmall', 'Otildesmall', 'Odieresissmall', 'OEsmall', 'Oslashsmall', 'Ugravesmall',  # 367-372
+        'Uacutesmall', 'Ucircumflexsmall', 'Udieresissmall', 'Yacutesmall', 'Thornsmall', 'Ydieresissmall',  # 373-378
+        '001.000', '001.001', '001.002', '001.003', 'Black', 'Bold', 'Book', 'Light', 'Medium', 'Regular',  # 379-388
+        'Roman', 'Semibold'  # 389-390
     ]
 
     top_dict_operation_map = {
-                (0,): ('version', (OPERAND_SID,), None),
-                (1,): ('Notice', (OPERAND_SID,), None),
-                (2,): ('FullName', (OPERAND_SID,), None),
-                (3,): ('FamilyName', (OPERAND_SID,), None),
-                (4,): ('Weight', (OPERAND_SID,), None),
-                (5,): ('FontBBox', (OPERAND_ARRAY,), [0, 0, 0, 0]),
-                (12, 0): ('Copyright', (OPERAND_SID,), None),
-                (12, 1): ('isFixedPitch', (OPERAND_BOOLEAN,), False),
-                (12, 2): ('ItalicAngle', (OPERAND_NUMBER,), 0),
-                (12, 3): ('UnderlinePosition', (OPERAND_NUMBER,), -100),
-                (12, 4): ('UnderlineThickness', (OPERAND_NUMBER,), 50),
-                (12, 5): ('PaintType', (OPERAND_NUMBER,), 0),
-                (12, 6): ('CharstringType', (OPERAND_NUMBER,), 2),
-                (12, 7): ('FontMatrix', (OPERAND_ARRAY,), [.001, 0, 0, .001, 0, 0]),
-                (12, 8): ('StrokeWidth', (OPERAND_NUMBER,), 0),
-                (12, 20): ('SyntheticBase', (OPERAND_NUMBER,), None),
-                (12, 21): ('PostScript', (OPERAND_SID,), None),
-                (12, 22): ('BaseFontName', (OPERAND_SID,), None),
-                (12, 23): ('BaseFontBlend', (OPERAND_DELTA,), None),
-                (12, 30): ('ROS', (OPERAND_SID, OPERAND_SID, OPERAND_NUMBER), None),
-                (12, 31): ('CIDFontVersion', (OPERAND_NUMBER,), 0),
-                (12, 32): ('CIDFontRevision', (OPERAND_NUMBER,), 0),
-                (12, 33): ('CIDFontType', (OPERAND_NUMBER,), 0),
-                (12, 34): ('CIDCount', (OPERAND_NUMBER,), 8720),
-                (12, 35): ('UIDBase', (OPERAND_NUMBER,), None),
-                (12, 36): ('FDArray', (OPERAND_NUMBER,), None),
-                (12, 37): ('FDSelect', (OPERAND_NUMBER,), None),
-                (12, 38): ('FontName', (OPERAND_SID,), None),
-                (13,): ('UniqueID', (OPERAND_NUMBER,), None),
-                (14,): ('XUID', (OPERAND_ARRAY,), None),
-                (15,): ('charset', (OPERAND_NUMBER,), 0),
-                (16,): ('Encoding', (OPERAND_NUMBER,), None),
-                (17,): ('CharStrings', (OPERAND_NUMBER,), None),
-                (18,): ('Private', (OPERAND_NUMBER, OPERAND_NUMBER), None),
-            }
+        (0,): ('version', (OPERAND_SID,), None),
+        (1,): ('Notice', (OPERAND_SID,), None),
+        (2,): ('FullName', (OPERAND_SID,), None),
+        (3,): ('FamilyName', (OPERAND_SID,), None),
+        (4,): ('Weight', (OPERAND_SID,), None),
+        (5,): ('FontBBox', (OPERAND_ARRAY,), [0, 0, 0, 0]),
+        (12, 0): ('Copyright', (OPERAND_SID,), None),
+        (12, 1): ('isFixedPitch', (OPERAND_BOOLEAN,), False),
+        (12, 2): ('ItalicAngle', (OPERAND_NUMBER,), 0),
+        (12, 3): ('UnderlinePosition', (OPERAND_NUMBER,), -100),
+        (12, 4): ('UnderlineThickness', (OPERAND_NUMBER,), 50),
+        (12, 5): ('PaintType', (OPERAND_NUMBER,), 0),
+        (12, 6): ('CharstringType', (OPERAND_NUMBER,), 2),
+        (12, 7): ('FontMatrix', (OPERAND_ARRAY,), [.001, 0, 0, .001, 0, 0]),
+        (12, 8): ('StrokeWidth', (OPERAND_NUMBER,), 0),
+        (12, 20): ('SyntheticBase', (OPERAND_NUMBER,), None),
+        (12, 21): ('PostScript', (OPERAND_SID,), None),
+        (12, 22): ('BaseFontName', (OPERAND_SID,), None),
+        (12, 23): ('BaseFontBlend', (OPERAND_DELTA,), None),
+        (12, 30): ('ROS', (OPERAND_SID, OPERAND_SID, OPERAND_NUMBER), None),
+        (12, 31): ('CIDFontVersion', (OPERAND_NUMBER,), 0),
+        (12, 32): ('CIDFontRevision', (OPERAND_NUMBER,), 0),
+        (12, 33): ('CIDFontType', (OPERAND_NUMBER,), 0),
+        (12, 34): ('CIDCount', (OPERAND_NUMBER,), 8720),
+        (12, 35): ('UIDBase', (OPERAND_NUMBER,), None),
+        (12, 36): ('FDArray', (OPERAND_NUMBER,), None),
+        (12, 37): ('FDSelect', (OPERAND_NUMBER,), None),
+        (12, 38): ('FontName', (OPERAND_SID,), None),
+        (13,): ('UniqueID', (OPERAND_NUMBER,), None),
+        (14,): ('XUID', (OPERAND_ARRAY,), None),
+        (15,): ('charset', (OPERAND_NUMBER,), 0),
+        (16,): ('Encoding', (OPERAND_NUMBER,), None),
+        (17,): ('CharStrings', (OPERAND_NUMBER,), None),
+        (18,): ('Private', (OPERAND_NUMBER, OPERAND_NUMBER), None),
+    }
 
     private_dict_operation_map = {
-                (6,): ('BlueValues', (OPERAND_DELTA,), None),
-                (7,): ('OtherBlues', (OPERAND_DELTA,), None),
-                (8,): ('FamilyBlues', (OPERAND_DELTA,), None),
-                (9,): ('FamilyOtherBlues', (OPERAND_DELTA,), None),
-                (10,): ('StdHW', (OPERAND_NUMBER,), None),
-                (11,): ('StdVW', (OPERAND_NUMBER,), None),
-                (12, 9): ('BlueScale', (OPERAND_NUMBER,), .039625),
-                (12, 10): ('BlueShift', (OPERAND_NUMBER,), 7),
-                (12, 11): ('BlueFuzz', (OPERAND_NUMBER,), 1),
-                (12, 12): ('StemSnapH', (OPERAND_DELTA,), None),
-                (12, 13): ('StemSnapV', (OPERAND_DELTA,), None),
-                (12, 14): ('ForceBold', (OPERAND_BOOLEAN,), False),
-                (12, 17): ('LanguageGroup', (OPERAND_NUMBER,), 0),
-                (12, 18): ('ExpansionFactor', (OPERAND_NUMBER,), .06),
-                (12, 19): ('initialRandomSeed', (OPERAND_NUMBER,), 0),
-                (19,): ('Subrs', (OPERAND_NUMBER,), None),
-                (20,): ('defaultWidthX', (OPERAND_NUMBER,), 0),
-                (21,): ('nominalWidthX', (OPERAND_NUMBER,), 0),
-            }
+        (6,): ('BlueValues', (OPERAND_DELTA,), None),
+        (7,): ('OtherBlues', (OPERAND_DELTA,), None),
+        (8,): ('FamilyBlues', (OPERAND_DELTA,), None),
+        (9,): ('FamilyOtherBlues', (OPERAND_DELTA,), None),
+        (10,): ('StdHW', (OPERAND_NUMBER,), None),
+        (11,): ('StdVW', (OPERAND_NUMBER,), None),
+        (12, 9): ('BlueScale', (OPERAND_NUMBER,), .039625),
+        (12, 10): ('BlueShift', (OPERAND_NUMBER,), 7),
+        (12, 11): ('BlueFuzz', (OPERAND_NUMBER,), 1),
+        (12, 12): ('StemSnapH', (OPERAND_DELTA,), None),
+        (12, 13): ('StemSnapV', (OPERAND_DELTA,), None),
+        (12, 14): ('ForceBold', (OPERAND_BOOLEAN,), False),
+        (12, 17): ('LanguageGroup', (OPERAND_NUMBER,), 0),
+        (12, 18): ('ExpansionFactor', (OPERAND_NUMBER,), .06),
+        (12, 19): ('initialRandomSeed', (OPERAND_NUMBER,), 0),
+        (19,): ('Subrs', (OPERAND_NUMBER,), None),
+        (20,): ('defaultWidthX', (OPERAND_NUMBER,), 0),
+        (21,): ('nominalWidthX', (OPERAND_NUMBER,), 0),
+    }
 
     def __init__(self):
         self._glyphs = []
@@ -133,7 +134,7 @@ class CffFont(object):
         self.char_sets = []
         self.char_strings = []
         self.name = ''
-        self.private_data = None
+        self.private_data = []
         self.data = WalkableString('')
 
     def read_from_content(self, encoded_data):
@@ -166,10 +167,12 @@ class CffFont(object):
 
             if 'Private' in top_dict and top_dict['Private']:
                 private_operands = top_dict['Private']
-                self.private_data = self.parse_private_data(self.data, private_operands[1], private_operands[0])
+                self.private_data.append(self.parse_private_data(self.data, private_operands[1], private_operands[0]))
                 if 'Subrs' in self.private_data:
                     self.data.set_position(self.private_data['Subrs'])
                     self._local_subr_table = self.read_index_table()
+            else:
+                self.private_data.append(None)
             parser = Type2CharStringParser()
             for j in range(len(char_string_table)):
                 if j == 0:
@@ -177,10 +180,17 @@ class CffFont(object):
                 else:
                     char = self.char_sets[i][j - 1]
 
+                if self.private_data[-1]:
+                    default_width = self.private_data[-1]['defaultWidthX']
+                    nominal_width = self.private_data[-1]['nominalWidthX']
+                else:
+                    default_width = 0
+                    nominal_width = 0
+
                 self._glyphs.append(Type2CharString(
                     font_name_table[i].data, char,
                     parser.parse(char_string_table[j], self.global_subroutine_table, self._local_subr_table),
-                    self.private_data[i]['defaultWidthX'], self.private_data[i]['nominalWidthX']))
+                        default_width, nominal_width))
         self.name = font_name_table[0].data
 
     def move_to_end_of_header(self):
@@ -208,9 +218,9 @@ class CffFont(object):
                     values.append(current_value)
                 del stack[:]
             else:
-                (type, value) = stack.pop(0)
+                (operator_type, value) = stack.pop(0)
                 if operand_type == OPERAND_SID:
-                    if type != OPERAND_NUMBER:
+                    if operator_type != OPERAND_NUMBER:
                         raise ValueError('Type of argument does not match expected type')
                     else:
                         value = self.lookup_string_by_index(value)
@@ -229,8 +239,8 @@ class CffFont(object):
                 # initialize defaults
                 table[value[0]] = value[2]
             while not table_data.is_exhausted():
-                (type, value) = pdfbox.fonts.cff.rawdata.read_unknown_thing(table_data)
-                if type == OPERAND_OPERATION:
+                (operator_type, value) = fonts.cff.rawdata.read_unknown_thing(table_data)
+                if operator_type == OPERAND_OPERATION:
                     operation = operation_map[value]
                     (key, operand_types, default_value) = operation
                     values = self.get_values(operand_types, stack)
@@ -239,14 +249,13 @@ class CffFont(object):
                     else:
                         table[key] = values
                 else:
-                    stack.append((type, value))
+                    stack.append((operator_type, value))
             tables.append(table)
         return tables
 
-
     @staticmethod
-    def get_header_size(bytes):
-        header_size = bytes[2]
+    def get_header_size(data):
+        header_size = data[2]
         return header_size
 
     def read_index_table(self):
@@ -255,7 +264,7 @@ class CffFont(object):
             return []
         offset_size = self.data.read_integer(1)
         offsets = []
-        for i in range(count+1):
+        for i in range(count + 1):
             offsets.append(self.data.read_integer(offset_size))
         byte_chunks = []
         for i in range(count):
@@ -263,14 +272,15 @@ class CffFont(object):
             byte_chunks.append(self.data.read_chunk(size))
         return byte_chunks
 
-    def parse_encoding(self, data, offset):
+    @staticmethod
+    def parse_encoding(data, offset):
         data.set_position(offset)
         if offset == 0:
-            return pdfbox.fonts.cff.encodings.StandardEncoding()
+            return fonts.cff.encodings.Standard()
         elif offset == 1:
-            return pdfbox.fonts.cff.encodings.ExpertEncoding()
+            return fonts.cff.encodings.Expert()
 
-        encoding = pdfbox.fonts.cff.encodings.Encoding()
+        encoding = fonts.cff.encodings.Encoding()
 
         encoding_format = data.read_integer(1)
         if encoding_format > 127:
@@ -314,7 +324,7 @@ class CffFont(object):
                 char_set.append(self.lookup_string_by_index(sid))
         else:
             range_count_size = char_set_format  # format 1 means 1-byte count, format 2 means a 2-byte count
-            glyphs_left = num_glyphs - 1   # .notdef glyph isn't assigned an encoding, even though it's counted in total
+            glyphs_left = num_glyphs - 1  # .notdef glyph isn't assigned an encoding, even though it's counted in total
             while glyphs_left:
                 first_sid = data.read_integer(2)
                 char_set.append(self.lookup_string_by_index(first_sid))
@@ -324,7 +334,6 @@ class CffFont(object):
                     char_set.append(self.lookup_string_by_index(first_sid + i + 1))
                 glyphs_left -= range_count + 1
         return char_set
-
 
     def stock_char_set(self, offset, num_glyphs):
         expert_sids = [1, 13, 14, 15, 27, 28, 99, 109, 110, 150, 155, 158, 163, 164, 169]
@@ -339,9 +348,9 @@ class CffFont(object):
             else:
                 # Expert subset, which has a bunch of small ranges and random SIDs
                 sids_to_include.extend([231, 232, 272, 300, 301, 302, 305, 314, 315])
-                sids_to_include.extend(range(235, 252))   # 252 is skipped
-                sids_to_include.extend(range(253, 271))   # 271 is skipped
-                sids_to_include.extend(range(320, 347))   # 271 is skipped
+                sids_to_include.extend(range(235, 252))  # 252 is skipped
+                sids_to_include.extend(range(253, 271))  # 271 is skipped
+                sids_to_include.extend(range(320, 347))  # 271 is skipped
 
         char_set = []
         for sid in sids_to_include:
