@@ -135,6 +135,9 @@ class CffFont(object):
         self.char_strings = []
         self.name = ''
         self.private_data = []
+        self.font_dict_lists = []
+        self.font_dict_mapping = []
+        self.is_cid_font = False
         self.data = WalkableString('')
 
     def read_from_content(self, encoded_data):
@@ -164,6 +167,22 @@ class CffFont(object):
                 self.char_sets.append(self.parse_char_set(self.data, top_dict['charset'], len(char_string_table)))
             else:
                 self.char_sets.append([])
+            if 'ROS' in top_dict:
+                self.is_cid_font = True
+                # CID font, need to read all the CID info
+                self.data.set_position(top_dict['FDArray'])
+                font_dict_array_table = self.read_index_table()
+                font_dicts = self.build_tables(font_dict_array_table, self.top_dict_operation_map)
+                for font_dict in font_dicts:
+                    private_operands = font_dict['Private']
+                    private_data_list = self.parse_private_data(self.data, private_operands[1],
+                                                                private_operands[0])
+                    font_dict['PrivateData'] = private_data_list[0]
+                self.font_dict_lists.append(font_dicts)
+                self.font_dict_mapping.append(self.read_font_dict_mapping(top_dict['FDSelect'], len(char_string_table)))
+            else:
+                self.font_dict_lists.append([])
+                self.font_dict_mapping.append([])
 
             if 'Private' in top_dict and top_dict['Private']:
                 private_operands = top_dict['Private']
@@ -180,9 +199,14 @@ class CffFont(object):
                 else:
                     char = self.char_sets[i][j - 1]
 
-                if self.private_data[-1]:
-                    default_width = self.private_data[-1]['defaultWidthX']
-                    nominal_width = self.private_data[-1]['nominalWidthX']
+                if self.is_cid_font:
+                    private_data = self.font_dict_lists[i][self.font_dict_mapping[i][j]]['PrivateData']
+                else:
+                    private_data = self.private_data[-1]
+
+                if private_data:
+                    default_width = private_data['defaultWidthX']
+                    nominal_width = private_data['nominalWidthX']
                 else:
                     default_width = 0
                     nominal_width = 0
@@ -252,6 +276,31 @@ class CffFont(object):
                     stack.append((operator_type, value))
             tables.append(table)
         return tables
+
+    def read_font_dict_mapping(self, offset, num_glyphs):
+        self.data.set_position(offset)
+        format = self.data.read_integer(1)
+        glyph_id_to_font_dict_index = []
+        if format == 0:
+            for i in range(num_glyphs):
+                glyph_id_to_font_dict_index[i] = self.data.read_integer(1)
+        else:
+            num_ranges = self.data.read_integer(2)
+            range_starting_points = []
+            dict_indexes = []
+            for i in range(num_ranges):
+                range_starting_points.append(self.data.read_integer(2))
+                dict_indexes.append(self.data.read_integer(1))
+            range_starting_points.append(self.data.read_integer(2))
+            glyph_id = range_starting_points[0]
+            assert(glyph_id, 0)
+            # according to the spec the first range doesn't have to start with 0, but the last range is supposed to be
+            # the count, so this format doesn't make sense if the first starting point is non-zero
+            for i in range(num_ranges):
+                while glyph_id < range_starting_points[i + 1]:
+                    glyph_id_to_font_dict_index.append(dict_indexes[i])
+                    glyph_id += 1
+        return glyph_id_to_font_dict_index
 
     @staticmethod
     def get_header_size(data):
