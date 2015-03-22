@@ -51,3 +51,14 @@ class WalkableString(object):
     def get_data(self):
         return self.data
 
+    def __eq__(self, other):
+        if isinstance(other, basestring):
+            return self.data == other
+        else:
+            return self.data == other.get_data()
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __str__(self):
+        return ":".join("{:02x}".format(ord(c)) for c in self.data)

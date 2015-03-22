@@ -98,7 +98,7 @@ class CffFont(object):
         (13,): ('UniqueID', (OPERAND_NUMBER,), None),
         (14,): ('XUID', (OPERAND_ARRAY,), None),
         (15,): ('charset', (OPERAND_NUMBER,), 0),
-        (16,): ('Encoding', (OPERAND_NUMBER,), None),
+        (16,): ('Encoding', (OPERAND_NUMBER,), 0),
         (17,): ('CharStrings', (OPERAND_NUMBER,), None),
         (18,): ('Private', (OPERAND_NUMBER, OPERAND_NUMBER), None),
     }
@@ -378,7 +378,6 @@ class CffFont(object):
                 first_sid = data.read_integer(2)
                 char_set.append(self.lookup_string_by_index(first_sid))
                 range_count = data.read_integer(range_count_size)
-                offset += range_count_size
                 for i in range(range_count):
                     char_set.append(self.lookup_string_by_index(first_sid + i + 1))
                 glyphs_left -= range_count + 1
